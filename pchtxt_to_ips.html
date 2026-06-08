@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>pchtxt 转 ips</title>
+  <style>
+    :root {
+      --bg: #f6f6f6;
+      --panel: #ffffff;
+      --text: #222222;
+      --muted: #666666;
+      --line: #d8d8d8;
+      --accent: #2f6fdd;
+      --ok: #1b7f3a;
+      --warn: #9a6200;
+      --bad: #b3261e;
+      --code: #f1f1f1;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .hero {
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .sub,
+    .hint,
+    .small,
+    .label,
+    label {
+      color: var(--muted);
+    }
+
+    .sub { margin: 0; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    @media (min-width: 860px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 16px;
+    }
+
+    .drop {
+      border: 1px dashed #999;
+      border-radius: 6px;
+      padding: 18px;
+      text-align: center;
+      background: #fafafa;
+      cursor: pointer;
+    }
+
+    .drop.drag {
+      border-color: var(--accent);
+      background: #f0f5ff;
+    }
+
+    .drop p { margin: 0; }
+
+    input[type=file] { display: none; }
+
+    label,
+    .label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    input[type=text] {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid #cfcfcf;
+      border-radius: 4px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      font: inherit;
+    }
+
+    input[type=text]:focus {
+      border-color: var(--accent);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    @media (min-width: 620px) {
+      .row.two { grid-template-columns: 1fr 1fr; }
+    }
+
+    button,
+    .btn {
+      border: 1px solid #1f5bbf;
+      border-radius: 4px;
+      padding: 9px 13px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      font: inherit;
+      font-weight: 500;
+    }
+
+    button.secondary,
+    .btn.secondary {
+      background: #fff;
+      color: #333;
+      border-color: #bbb;
+    }
+
+    button:disabled,
+    .btn.disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pillbox {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px 10px;
+      overflow-wrap: anywhere;
+      background: #fafafa;
+    }
+
+    .pill b { font-weight: 600; }
+
+    pre {
+      margin: 10px 0 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--code);
+      color: #222;
+      overflow: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .hint { font-size: 14px; }
+    .small { font-size: 12px; margin-top: 6px; }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .bad { color: var(--bad); }
+    .hidden { display: none !important; }
+    .log { margin-top: 10px; white-space: pre-wrap; }
+
+    ol {
+      margin: 8px 0 0;
+      padding-left: 22px;
+    }
+
+    code {
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: #eee;
+      font-family: Consolas, Menlo, Monaco, monospace;
+      font-size: .95em;
+    }
+
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>pchtxt 转 ips</h1>
+      <p class="sub">用于 Atmosphere 的 exefs_patches。</p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>1. 选择 .pchtxt 文件</h2>
+        <div id="drop" class="drop" tabindex="0" role="button" aria-label="选择或拖入 pchtxt 文件">
+          <p><strong>点击选择</strong> 或把 <code>.pchtxt</code> 拖到这里</p>
+        </div>
+        <input id="file" type="file" accept=".pchtxt,.txt,text/plain" />
+
+        <div class="row two">
+          <div>
+            <label for="folderName">补丁文件夹名</label>
+            <input id="folderName" type="text" placeholder="例如：60fps_patch" />
+            <p class="small">这是放在 <code>atmosphere/exefs_patches/</code> 下面的文件夹名，可自定义。</p>
+          </div>
+          <div>
+            <label for="manualBuildId">手动指定 Build ID，可留空</label>
+            <input id="manualBuildId" type="text" placeholder="例如：D5AD6A...B3" maxlength="64" />
+            <p class="small">文件里识别不到 <code>@nsobid</code> 时再填。</p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="convert" disabled>转换为 .ips</button>
+          <button id="clear" class="secondary" type="button">清空</button>
+        </div>
+        <div id="message" class="log hint">还没有选择文件。</div>
+      </div>
+
+      <div class="card">
+        <h2>2. 转换结果</h2>
+        <div id="resultEmpty" class="hint">转换成功后，这里会显示下载按钮和放置目录教程。</div>
+        <div id="result" class="hidden">
+          <div class="pillbox">
+            <div class="pill"><b>Build ID：</b><span id="outBuildId"></span></div>
+            <div class="pill"><b>IPS 文件名：</b><span id="outFileName"></span></div>
+          </div>
+          <details class="details">
+            <summary>转换详情</summary>
+            <div class="pillbox">
+              <div class="pill"><b>补丁数量：</b><span id="outCount"></span></div>
+              <div class="pill"><b>地址偏移：</b><span id="outShift"></span></div>
+            </div>
+          </details>
+          <div class="actions">
+            <a id="download" class="btn" download>下载 .ips 文件</a>
+            <button id="copyPath" class="secondary" type="button">复制目标目录</button>
+          </div>
+
+          <h3>放置目录教程</h3>
+          <ol>
+            <li>打开 SD 卡根目录。</li>
+            <li>进入 <code>atmosphere</code> → <code>exefs_patches</code>。</li>
+            <li>新建下面这个文件夹，不要放进 <code>es_patches</code>、<code>nfim_ctest</code>、<code>nim_ctest</code> 或 <code>SaltyNX_Fixes</code> 里。</li>
+            <li>把下载出来的 <code>.ips</code> 文件放进去。</li>
+            <li>完全退出游戏后重新进；不生效就重启一次 Switch/大气层。</li>
+          </ol>
+          <pre id="tree"></pre>
+          <p class="warn">注意：游戏版本和 Build ID 必须匹配。比如 1.1.0 的补丁通常不能给 1.1.1、1.2.0、1.2.1 用。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <h2>常见错误</h2>
+      <p>不要放到金手指目录，也不要套一层 <code>exefs</code> 子目录。下面这种一般是错的：</p>
+      <pre>atmosphere\contents\0100F2C0115B6000\cheats\...
+atmosphere\exefs_patches\60fps_patch\exefs\xxxx.ips
+Switch\金手指文件夹\0100F2C0115B6000\60fps_patch\exefs</pre>
+      <p>Atmosphere 读取 exefs IPS 补丁时，目标结构应是：</p>
+      <pre>SD Card\atmosphere\exefs_patches\补丁文件夹名\BuildID.ips</pre>
+    </section>
+  </main>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const fileInput = $('file');
+  const drop = $('drop');
+  const convertBtn = $('convert');
+  const clearBtn = $('clear');
+  const msg = $('message');
+  const folderName = $('folderName');
+  const manualBuildId = $('manualBuildId');
+  const result = $('result');
+  const resultEmpty = $('resultEmpty');
+  const download = $('download');
+  const copyPath = $('copyPath');
+  const tree = $('tree');
+
+  let loaded = { name: '', text: '' };
+  let currentObjectUrl = null;
+  let currentTargetPath = '';
+
+  function setMessage(text, cls) {
+    msg.className = 'log ' + (cls || 'hint');
+    msg.textContent = text;
+  }
+
+  function sanitizeFolderName(name) {
+    return (name || 'pchtxt patch')
+      .replace(/\.pchtxt$/i, '')
+      .replace(/\.txt$/i, '')
+      .replace(/[\\/:*?"<>|]/g, '_')
+      .trim() || 'pchtxt patch';
+  }
+
+  function stripComment(line) {
+    const slash = line.indexOf('//');
+    if (slash >= 0) line = line.slice(0, slash);
+    const hash = line.indexOf('#');
+    if (hash >= 0) line = line.slice(0, hash);
+    return line.trim();
+  }
+
+  function parseNumber(s) {
+    const t = String(s).trim();
+    if (/^0x[0-9a-f]+$/i.test(t)) return parseInt(t.slice(2), 16);
+    if (/^[0-9a-f]+$/i.test(t)) return parseInt(t, 16);
+    throw new Error('无法识别地址/数值：' + s);
+  }
+
+  function parsePchtxt(text) {
+    const lines = text.split(/\r?\n/);
+    let buildId = '';
+    let titleId = '';
+    let offsetShift = 0;
+    let hasEnabledBlock = false;
+    let inEnabled = false;
+    const records = [];
+
+    for (let raw of lines) {
+      const original = raw.trim();
+      if (!original) continue;
+
+      const titleMatch = original.match(/\[([0-9A-F]{16})\]/i);
+      if (titleMatch && !titleId) titleId = titleMatch[1].toUpperCase();
+
+      const commandLine = stripComment(original);
+      if (!commandLine) continue;
+
+      const nsoMatch = commandLine.match(/^@nsobid[-\s]+([0-9a-f]{32,64})\b/i);
+      if (nsoMatch) {
+        buildId = nsoMatch[1].toUpperCase();
+        continue;
+      }
+
+      const shiftMatch = commandLine.match(/^@flag\s+offset_shift\s+(.+)$/i);
+      if (shiftMatch) {
+        offsetShift = parseNumber(shiftMatch[1].split(/\s+/)[0]);
+        continue;
+      }
+
+      if (/^@enabled\b/i.test(commandLine)) {
+        hasEnabledBlock = true;
+        inEnabled = true;
+        continue;
+      }
+      if (/^@stop\b/i.test(commandLine)) {
+        inEnabled = false;
+        continue;
+      }
+      if (/^@disabled\b/i.test(commandLine)) {
+        inEnabled = false;
+        continue;
+      }
+      if (/^@/i.test(commandLine)) continue;
+
+      if (hasEnabledBlock && !inEnabled) continue;
+
+      const parts = commandLine.split(/\s+/).filter(Boolean);
+      if (parts.length < 2) continue;
+
+      const addrToken = parts[0].replace(/^0x/i, '');
+      const dataTokens = parts.slice(1);
+      if (!/^[0-9a-f]+$/i.test(addrToken)) continue;
+
+      const dataHex = dataTokens.join('').replace(/\s+/g, '');
+      if (!/^[0-9a-f]+$/i.test(dataHex)) {
+        throw new Error('数据不是纯十六进制：' + original);
+      }
+      if (dataHex.length % 2 !== 0) {
+        throw new Error('数据长度不是偶数：' + original);
+      }
+      if (dataHex.length === 0) continue;
+
+      const address = parseInt(addrToken, 16) + offsetShift;
+      if (!Number.isSafeInteger(address) || address < 0 || address > 0xFFFFFFFF) {
+        throw new Error('地址超出 IPS32 范围：' + original);
+      }
+      const bytes = hexToBytes(dataHex);
+      records.push({ address, bytes, raw: original });
+    }
+
+    if (!records.length) {
+      throw new Error('没有找到可转换的补丁行。请确认 .pchtxt 里有 @enabled 区块和「地址 十六进制数据」格式。');
+    }
+
+    return { buildId, titleId, offsetShift, records };
+  }
+
+  function hexToBytes(hex) {
+    const out = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
+    return out;
+  }
+
+  function pushAscii(arr, s) {
+    for (let i = 0; i < s.length; i++) arr.push(s.charCodeAt(i));
+  }
+  function pushU16BE(arr, n) { arr.push((n >>> 8) & 255, n & 255); }
+  function pushU32BE(arr, n) { arr.push((n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255); }
+
+  function buildIps32(records) {
+    const arr = [];
+    pushAscii(arr, 'IPS32');
+    for (const rec of records) {
+      let pos = 0;
+      while (pos < rec.bytes.length) {
+        const len = Math.min(0xFFFF, rec.bytes.length - pos);
+        pushU32BE(arr, rec.address + pos);
+        pushU16BE(arr, len);
+        for (let i = 0; i < len; i++) arr.push(rec.bytes[pos + i]);
+        pos += len;
+      }
+    }
+    pushAscii(arr, 'EEOF');
+    return new Blob([new Uint8Array(arr)], { type: 'application/octet-stream' });
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      loaded = { name: file.name, text: String(reader.result || '') };
+      folderName.value = folderName.value || sanitizeFolderName(file.name);
+      convertBtn.disabled = false;
+      result.classList.add('hidden');
+      resultEmpty.classList.remove('hidden');
+      setMessage('已读取：' + file.name + '\n点击“转换为 .ips”即可生成。', 'ok');
+    };
+    reader.onerror = () => setMessage('读取文件失败。', 'bad');
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function convert() {
+    try {
+      if (!loaded.text) throw new Error('请先选择 .pchtxt 文件。');
+      const parsed = parsePchtxt(loaded.text);
+      const manual = manualBuildId.value.trim().toUpperCase().replace(/[^0-9A-F]/g, '');
+      const buildId = manual || parsed.buildId;
+      if (!buildId) {
+        throw new Error('没有识别到 @nsobid。请在“手动指定 Build ID”里填入 Build ID。');
+      }
+      if (!/^[0-9A-F]{32,64}$/.test(buildId)) {
+        throw new Error('Build ID 看起来不正确，应为 32~64 位十六进制字符。');
+      }
+
+      const patchFolder = sanitizeFolderName(folderName.value || loaded.name);
+      folderName.value = patchFolder;
+      const fileName = buildId + '.ips';
+      const blob = buildIps32(parsed.records);
+      if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+      currentObjectUrl = URL.createObjectURL(blob);
+      download.href = currentObjectUrl;
+      download.download = fileName;
+
+      $('outBuildId').textContent = buildId;
+      $('outFileName').textContent = fileName;
+      $('outCount').textContent = String(parsed.records.length);
+      $('outShift').textContent = '0x' + parsed.offsetShift.toString(16).toUpperCase();
+
+      currentTargetPath = 'SD Card\\atmosphere\\exefs_patches\\' + patchFolder + '\\' + fileName;
+      tree.textContent = 'SD Card\n└─ atmosphere\n   └─ exefs_patches\n      └─ ' + patchFolder + '\n         └─ ' + fileName;
+
+      resultEmpty.classList.add('hidden');
+      result.classList.remove('hidden');
+      setMessage('转换成功。已生成 ' + fileName + '。\n请按右侧教程放入 exefs_patches。', 'ok');
+    } catch (err) {
+      result.classList.add('hidden');
+      resultEmpty.classList.remove('hidden');
+      setMessage('转换失败：' + (err && err.message ? err.message : String(err)), 'bad');
+    }
+  }
+
+  drop.addEventListener('click', () => fileInput.click());
+  drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+  fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, (e) => {
+    e.preventDefault();
+    drop.classList.add('drag');
+  }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, (e) => {
+    e.preventDefault();
+    drop.classList.remove('drag');
+  }));
+  drop.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
+  convertBtn.addEventListener('click', convert);
+  clearBtn.addEventListener('click', () => {
+    loaded = { name: '', text: '' };
+    fileInput.value = '';
+    folderName.value = '';
+    manualBuildId.value = '';
+    convertBtn.disabled = true;
+    result.classList.add('hidden');
+    resultEmpty.classList.remove('hidden');
+    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+    setMessage('已清空。', 'hint');
+  });
+  copyPath.addEventListener('click', async () => {
+    if (!currentTargetPath) return;
+    try {
+      await navigator.clipboard.writeText(currentTargetPath);
+      setMessage('已复制目标路径：\n' + currentTargetPath, 'ok');
+    } catch (_) {
+      setMessage('复制失败，你可以手动复制右侧目录树。', 'warn');
+    }
+  });
+})();
+</script>
+</body>
+</html>
